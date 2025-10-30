@@ -7,6 +7,16 @@ locals {
   ]
 }
 
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
 resource "aws_instance" "ec2" {
   count                  = var.ec2-instance-count
   ami                    = data.aws_ami.amazon_linux_2.id
