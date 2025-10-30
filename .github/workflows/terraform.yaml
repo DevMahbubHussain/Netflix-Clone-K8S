@@ -1,0 +1,79 @@
+name: 'Infrastructure Configuring using Terraform on AWS'
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        description: 'Terraform Action'
+        options:
+          - plan
+          - apply
+          - destroy
+        required: true
+        default: 'plan'
+      environment:
+        description: 'Target environment (e.g., dev, staging, production)'
+        required: true
+        default: 'production'
+
+env:
+  TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+  TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
+  TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
+
+permissions:
+  contents: read
+
+jobs:
+  infrastructure-setup-using-terraform:
+    name: Terraform ${{ inputs.action }}
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.environment }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: Terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setting up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.3"
+          terraform_wrapper: true
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Cache Terraform
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.terraform.d/plugin-cache
+            .terraform
+          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          restore-keys: |
+            ${{ runner.os }}-terraform-
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check --diff
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: ${{ inputs.action == 'plan' }}
+        run: terraform plan -input=false
+
+      - name: Terraform Apply
+        if: ${{ inputs.action == 'apply' }}
+        run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        if: ${{ inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve

@@ -1,0 +1,10 @@
+aws-region            = "ap-southeast-1"
+env = "dev"
+cidr-block = "10.0.0.0/16"
+pub-subnet-count = 4
+pub-cidr-block        = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+pub-availability-zone = ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c", "ap-southeast-1d"]
+ec2-instance-count    = 4
+ec2_instance_type     = ["t3a.xlarge", "t3a.medium", "t3a.medium", "t3a.medium"]
+ec2_volume_size       = 50
+ec2_volume_type       = "gp3"
