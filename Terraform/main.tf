@@ -33,7 +33,7 @@ resource "aws_key_pair" "generated_key" {
 # Save the private key locally (optional)
 resource "local_file" "private_key_pem" {
   content  = tls_private_key.generated.private_key_pem
-  filename = "${path.module}/generated-key.pem"
+  filename = "Netflix-Clone-K8S/generated-key.pem"
 }
 
 
