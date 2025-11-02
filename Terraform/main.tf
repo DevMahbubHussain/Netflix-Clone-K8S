@@ -7,22 +7,60 @@ locals {
   ]
 }
 
-data "aws_ami" "amazon_linux_2" {
+
+# data "aws_ami" "amazon_linux_2" {
+#   most_recent = true
+#   owners      = ["amazon"]
+
+#   filter {
+#     name   = "name"
+#     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+#   }
+# }
+
+# Generate a new SSH key pair
+resource "tls_private_key" "generated" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+# Register the public key with AWS
+resource "aws_key_pair" "generated_key" {
+  key_name   = "${local.org}-${local.project}-${local.env}-key"
+  public_key = tls_private_key.generated.public_key_openssh
+}
+
+# Save the private key locally (optional)
+resource "local_file" "private_key_pem" {
+  content  = tls_private_key.generated.private_key_pem
+  filename = "${path.module}/generated-key.pem"
+}
+
+
+
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical's AWS Account ID
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
+
 resource "aws_instance" "ec2" {
   count                  = var.ec2-instance-count
-  ami                    = data.aws_ami.amazon_linux_2.id
+  ami                    = data.aws_ami.ubuntu.id
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
   vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
+  key_name               = aws_key_pair.generated_key.key_name
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
