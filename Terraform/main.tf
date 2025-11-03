@@ -18,6 +18,7 @@ locals {
 #   }
 # }
 
+# Key Generation and Storage
 resource "tls_private_key" "web_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -28,15 +29,18 @@ resource "aws_key_pair" "web_key" {
   public_key = tls_private_key.web_key.public_key_openssh
 }
 
+# Save private key locally (with proper permissions)
 resource "local_file" "private_key" {
   content         = tls_private_key.web_key.private_key_pem
   filename        = "${path.cwd}/web_key.pem"
-  file_permission = "0600"
+  file_permission = "0400"  # More secure permission
 }
 
+# Save public key locally
 resource "local_file" "public_key" {
   content  = tls_private_key.web_key.public_key_openssh
   filename = "${path.cwd}/web_key.pub"
+  file_permission = "0644"
 }
 
 
@@ -75,6 +79,15 @@ resource "aws_instance" "ec2" {
 }
 
 
-# output "private_key_path" {
-#   value = local_file.private_key_pem.filename
-# }
+# Output the private key path for reference
+output "private_key_path" {
+  value = local_file.private_key.filename
+}
+
+output "public_key_path" {
+  value = local_file.public_key.filename
+}
+
+output "ssh_connection_example" {
+  value = format("ssh -i %s ubuntu@%s", local_file.private_key.filename, aws_instance.ec2[0].public_ip)
+}
