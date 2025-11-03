@@ -48,7 +48,7 @@ resource "aws_instance" "ec2" {
   subnet_id              = aws_subnet.public-subnet[count.index].id
   instance_type          = var.ec2_instance_type[count.index]
   vpc_security_group_ids = [aws_security_group.default-ec2-sg.id]
- key_name               = aws_key_pair.web_key.key_name
+  key_name               = aws_key_pair.web_key.key_name
   root_block_device {
     volume_size = var.ec2_volume_size
     volume_type = var.ec2_volume_type
