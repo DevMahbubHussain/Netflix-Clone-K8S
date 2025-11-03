@@ -26,14 +26,15 @@ resource "tls_private_key" "generated" {
 
 # Register the public key with AWS
 resource "aws_key_pair" "generated_key" {
-  key_name   = "${local.org}-${local.project}-${local.env}-key"
+  key_name   = "my-key"
   public_key = tls_private_key.generated.public_key_openssh
 }
 
 # Save the private key locally (optional)
-resource "local_file" "private_key_pem" {
+# Save private key (inside working dir)
+resource "local_file" "private_key" {
   content  = tls_private_key.generated.private_key_pem
-  filename = "Netflix-Clone-K8S/generated-key.pem"
+  filename = "${path.cwd}/generated-key.pem"
 }
 
 
