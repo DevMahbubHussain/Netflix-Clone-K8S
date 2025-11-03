@@ -33,13 +33,13 @@ resource "aws_key_pair" "web_key" {
 resource "local_file" "private_key" {
   content         = tls_private_key.web_key.private_key_pem
   filename        = "${path.cwd}/web_key.pem"
-  file_permission = "0400"  # More secure permission
+  file_permission = "0400" # More secure permission
 }
 
 # Save public key locally
 resource "local_file" "public_key" {
-  content  = tls_private_key.web_key.public_key_openssh
-  filename = "${path.cwd}/web_key.pub"
+  content         = tls_private_key.web_key.public_key_openssh
+  filename        = "${path.cwd}/web_key.pub"
   file_permission = "0644"
 }
 
