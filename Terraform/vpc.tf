@@ -1,5 +1,5 @@
 locals {
-  org     = "mahbub hussain"
+  org     = "mahbub"
   project = "netflix-clone"
   env     = var.env
 }
@@ -42,6 +42,7 @@ resource "aws_subnet" "public-subnet" {
   depends_on = [aws_vpc.vpc]
 }
 
+
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
 
@@ -78,7 +79,7 @@ resource "aws_security_group" "default-ec2-sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] // It should be specific IP range
   }
 
   egress {
